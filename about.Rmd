@@ -1,0 +1,23 @@
+---
+title: "About"
+output: html_document
+date: "`r Sys.Date()`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("here")
+```
+
+# About 
+
+About this site.
+
+```{r eval=FALSE, include=FALSE}
+source_folder <- here()
+output_folder <- here("docs")
+rmarkdown::render(input = paste0(source_folder, "/", "about.Rmd"),
+                  output_format = "html_document",
+                  output_file = "about.html",
+                  output_dir = output_folder)
+```
