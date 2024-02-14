@@ -30,6 +30,91 @@ leaflet_widget <- leafletOptions(attributionControl = FALSE) %>%
   addTiles()
 ```
 
+```{r}
+library(plotly)
+
+sparkline <- plot_ly(economics) %>%
+  add_lines(
+    x = ~date, y = ~psavert,
+    color = I("white"), span = I(1),
+    fill = 'tozeroy', alpha = 0.2
+  ) %>%
+  layout(
+    xaxis = list(visible = F, showgrid = F, title = ""),
+    yaxis = list(visible = F, showgrid = F, title = ""),
+    hovermode = "x",
+    margin = list(t = 0, r = 0, l = 0, b = 0),
+    font = list(color = "white"),
+    paper_bgcolor = "transparent",
+    plot_bgcolor = "transparent"
+  ) %>%
+  config(displayModeBar = F) %>%
+  htmlwidgets::onRender(
+    "function(el) {
+      var ro = new ResizeObserver(function() {
+         var visible = el.offsetHeight > 200;
+         Plotly.relayout(el, {'xaxis.visible': visible});
+      });
+      ro.observe(el);
+    }"
+  )
+
+
+vb_sparkline <- value_box(
+  title = "Covid-19 Trends",
+  value = "7.6%",
+  p("Started at 12.6%"),
+  p("Averaged 8.6% over that period"),
+  showcase = sparkline,
+  full_screen = TRUE,
+  theme = "primary"
+)
+
+vb2 <- value_box(
+  title = "Energy consumption",
+  value = "345 kwh/month",
+  showcase = bsicons::bs_icon("ev-station-fill")
+)
+
+vb3 <- value_box(
+  title = "Test Title",
+  value = "-56%",
+  showcase = bsicons::bs_icon("arrow-down-right")
+)
+```
+
+```{r}
+navset_card_tab(
+  height = 550,
+  full_screen = TRUE,
+  title = "Wastewater",
+  nav_panel(
+    "RSV",
+    layout_column_wrap(
+     # width = 1/2,
+    #  height = 300,
+      list(vb_sparkline, vb2, vb3),
+      card(full_screen = TRUE, card_header("NH Levels & trends"), card_body(class = "p-0", leaflet_widget))
+    )
+  ),
+  nav_panel(
+    "Covid-19",
+    card_title("A plotly plot"),
+    plotly_widget
+  ),
+  nav_panel(
+    "Flu",
+    card_title("A leaflet plot"),
+    leaflet_widget
+  ),
+  
+
+  nav_panel(
+    shiny::icon("circle-info"),
+    markdown("Learn more about [htmlwidgets](http://www.htmlwidgets.org/)")
+  )
+)
+```
 
 ```{r}
 card(
