@@ -1,0 +1,102 @@
+---
+title: "Cards"
+output: 
+  html_document:
+    theme:
+      primary: "#072671"
+      bootswatch: "lumen"
+date: "`r Sys.Date()`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = FALSE,
+	message = FALSE,
+	warning = FALSE
+)
+library("here")
+library("bslib")
+library(shiny)
+library(htmltools)
+library(plotly)
+library(leaflet)
+```
+
+```{r}
+plotly_widget <- plot_ly(x = diamonds$cut) %>%
+  config(displayModeBar = FALSE) %>%
+  layout(margin = list(t = 0, b = 0, l = 0, r = 0))
+
+leaflet_widget <- leafletOptions(attributionControl = FALSE) %>%
+  leaflet(options = .) %>%
+  addTiles()
+```
+
+
+```{r}
+card(
+  card_header(
+    class = "bg-light",
+    "A header"
+  ),
+  card_body(
+    markdown("Some text with a [link](https://tori-cowger.github.io/wastewater_web/)")
+  )
+)
+```
+```{r}
+card(
+  height = 275,
+  full_screen = TRUE,
+  card_header("A filling map"),
+  card_body(
+    class = "p-0",
+    leaflet_widget
+  ),
+  card_footer(
+    class = "fs-6",
+    "Copyright 2023 RStudio, PBC"
+  )
+)
+```
+
+```{r}
+layout_column_wrap(
+  width = 1/2,
+  height = 300,
+  card(full_screen = TRUE, card_header("A filling plot"), plotly_widget),
+  card(full_screen = TRUE, card_header("A filling map"), card_body(class = "p-0", leaflet_widget))
+)
+```
+
+```{r}
+navset_card_tab(
+  height = 450,
+  full_screen = TRUE,
+  title = "HTML Widgets",
+  nav_panel(
+    "Plotly",
+    card_title("A plotly plot"),
+    plotly_widget
+  ),
+  nav_panel(
+    "Leaflet",
+    card_title("A leaflet plot"),
+    leaflet_widget
+  ),
+  nav_panel(
+    shiny::icon("circle-info"),
+    markdown("Learn more about [htmlwidgets](http://www.htmlwidgets.org/)")
+  )
+)
+```
+
+
+```{r eval=FALSE, include=FALSE}
+source_folder <- here()
+output_folder <- here("docs")
+rmarkdown::render(input = paste0(source_folder, "/", "cards.Rmd"),
+                  output_format = "html_document",
+                  output_file = "cards.html",
+                  output_dir = output_folder)
+```
