@@ -1,11 +1,9 @@
 ---
-title: "Cards"
 output: 
   html_document:
     theme:
       primary: "#072671"
       bootswatch: "lumen"
-date: "`r Sys.Date()`"
 ---
 
 ```{r setup, include=FALSE}
