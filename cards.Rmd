@@ -114,7 +114,6 @@ navset_card_tab(
     markdown("Learn more about [htmlwidgets](http://www.htmlwidgets.org/)")
   )
 )
-
 ```
 
 ```{r}
