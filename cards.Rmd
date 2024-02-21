@@ -28,11 +28,17 @@ plotly_widget <- plot_ly(x = diamonds$cut) %>%
 leaflet_widget <- leafletOptions(attributionControl = FALSE) %>%
   leaflet(options = .) %>%
   addTiles()
+
+# Import Map
+map_loc <- "/DataDrive/covid19/wastewater/wastewater-epi/_outputs/HTML/leaf_map.rds"
+covid_map <- readRDS(map_loc)
+
+html_map_loc <- "/DataDrive/covid19/wastewater/wastewater-epi/_outputs/HTML/leaf_map.html"
+
+file.copy(from = html_map_loc, to = here::here("docs", "leaf_map.html"), overwrite = TRUE)
 ```
 
 ```{r}
-library(plotly)
-
 sparkline <- plot_ly(economics) %>%
   add_lines(
     x = ~date, y = ~psavert,
@@ -87,23 +93,23 @@ vb3 <- value_box(
 navset_card_tab(
   height = 550,
   full_screen = TRUE,
-  title = "Wastewater",
+  title = "Latest Wastewater",
   nav_panel(
-    "RSV",
+    "COVID-19",
     layout_column_wrap(
      # width = 1/2,
     #  height = 300,
       list(vb_sparkline, vb2, vb3),
-      card(full_screen = TRUE, card_header("NH Levels & trends"), card_body(class = "p-0", leaflet_widget))
+      card(full_screen = TRUE, card_header("NH Levels & trends"), card_body(class = "p-0", covid_map))
     )
   ),
   nav_panel(
-    "Covid-19",
+    "RSV",
     card_title("A plotly plot"),
     plotly_widget
   ),
   nav_panel(
-    "Flu",
+    "Influenza",
     card_title("A leaflet plot"),
     leaflet_widget
   ),
@@ -111,7 +117,11 @@ navset_card_tab(
 
   nav_panel(
     shiny::icon("circle-info"),
-    markdown("Learn more about [htmlwidgets](http://www.htmlwidgets.org/)")
+    markdown("Learn more about [BPHC's wastwater program](https://www.boston.gov/government/cabinets/boston-public-health-commission/boston-wastewater-monitoring)")
+  ),
+  card_footer(
+    class = "fs-6",
+    "Data Through "
   )
 )
 ```
