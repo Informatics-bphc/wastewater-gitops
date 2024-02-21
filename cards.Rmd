@@ -90,13 +90,14 @@ vb3 <- value_box(
 
 ```{r}
 navset_card_tab(
-  height = 550,
+  height = 600,
   full_screen = TRUE,
   title = "Latest Wastewater",
   nav_panel(
     "COVID-19",
     layout_column_wrap(
-     # width = 1/2,
+      #width = 1/2,
+      style = css(grid_template_columns = "1fr 2fr"),
     #  height = 300,
       list(vb_sparkline, vb2, vb3),
       card(full_screen = TRUE, card_header("NH Levels & trends"), card_body(class = "p-0", covid_map))
