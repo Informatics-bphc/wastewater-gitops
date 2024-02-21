@@ -34,8 +34,7 @@ map_loc <- "/DataDrive/covid19/wastewater/wastewater-epi/_outputs/HTML/leaf_map.
 covid_map <- readRDS(map_loc)
 
 html_map_loc <- "/DataDrive/covid19/wastewater/wastewater-epi/_outputs/HTML/leaf_map.html"
-
-file.copy(from = html_map_loc, to = here::here("docs", "leaf_map.html"), overwrite = TRUE)
+#file.copy(from = html_map_loc, to = here::here("docs", "leaf_map.html"), overwrite = TRUE)
 ```
 
 ```{r}
