@@ -6,6 +6,15 @@ output:
       bootswatch: "lumen"
 ---
 
+<style>
+.main-container {
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: auto;
+}
+</style>
+
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
 	echo = FALSE,
@@ -41,7 +50,7 @@ html_map_loc <- "/DataDrive/covid19/wastewater/wastewater-epi/_outputs/HTML/leaf
 sparkline <- plot_ly(economics) %>%
   add_lines(
     x = ~date, y = ~psavert,
-    color = I("white"), span = I(1),
+    color = I("black"), span = I(1),
     fill = 'tozeroy', alpha = 0.2
   ) %>%
   layout(
@@ -49,7 +58,7 @@ sparkline <- plot_ly(economics) %>%
     yaxis = list(visible = F, showgrid = F, title = ""),
     hovermode = "x",
     margin = list(t = 0, r = 0, l = 0, b = 0),
-    font = list(color = "white"),
+    font = list(color = "black"),
     paper_bgcolor = "transparent",
     plot_bgcolor = "transparent"
   ) %>%
@@ -70,6 +79,20 @@ vb_sparkline <- value_box(
   value = "7.6%",
   p("Started at 12.6%"),
   p("Averaged 8.6% over that period"),
+  showcase_layout = "bottom",
+  showcase = sparkline,
+ # theme = "primary",
+  full_screen = TRUE
+)
+
+
+vb_sparkline2 <- value_box(
+  title = "Citywide Levels and Trends",
+  value = img(src = here("docs","img", "circ_high_stable.png"), height = "38", width = "38"),
+  h4("Level: High"),
+  p("XX copies/mL"),
+  h4("2-week Trend: Stable"),
+  p("+XX copies/mL (+2%) over the past 2 weeks"),
   showcase_layout = "bottom",
   showcase = sparkline,
  # theme = "primary",
@@ -101,7 +124,8 @@ navset_card_tab(
       style = css(grid_template_columns = "1fr 2fr"),
     #  height = 300,
       #list(h3("Citywide"),vb_sparkline),
-      card(fullscreen = TRUE, card_header("Citywide COVID-19 Levels & Trends"), vb_sparkline),
+      vb_sparkline2,
+      #card(fullscreen = TRUE,  vb_sparkline2),
       card(full_screen = TRUE, card_header("Neighborhood COVID-19 Levels & Trends"), card_body(class = "p-0", covid_map))
     )
   ),
