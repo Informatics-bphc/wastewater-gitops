@@ -1,0 +1,129 @@
+---
+output: 
+  html_document:
+    theme:
+      primary: "#072671"
+      bootswatch: "lumen"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = FALSE,
+	message = FALSE,
+	warning = FALSE
+)
+library("here")
+library("bslib")
+library(shiny)
+library(htmltools)
+library(plotly)
+library(leaflet)
+```
+
+```{r}
+plotly_widget <- plot_ly(x = diamonds$cut) %>%
+  config(displayModeBar = FALSE) %>%
+  layout(margin = list(t = 0, b = 0, l = 0, r = 0))
+
+leaflet_widget <- leafletOptions(attributionControl = FALSE) %>%
+  leaflet(options = .) %>%
+  addTiles()
+
+# Import Map
+map_loc <- "/DataDrive/covid19/wastewater/wastewater-epi/_outputs/HTML/leaf_map.rds"
+covid_map <- readRDS(map_loc)
+
+html_map_loc <- "/DataDrive/covid19/wastewater/wastewater-epi/_outputs/HTML/leaf_map.html"
+#file.copy(from = html_map_loc, to = here::here("docs", "leaf_map.html"), overwrite = TRUE)
+```
+
+```{r}
+sparkline <- plot_ly(economics) %>%
+  add_lines(
+    x = ~date, y = ~psavert,
+    color = I("white"), span = I(1),
+    fill = 'tozeroy', alpha = 0.2
+  ) %>%
+  layout(
+    xaxis = list(visible = F, showgrid = F, title = ""),
+    yaxis = list(visible = F, showgrid = F, title = ""),
+    hovermode = "x",
+    margin = list(t = 0, r = 0, l = 0, b = 0),
+    font = list(color = "white"),
+    paper_bgcolor = "transparent",
+    plot_bgcolor = "transparent"
+  ) %>%
+  config(displayModeBar = F) %>%
+  htmlwidgets::onRender(
+    "function(el) {
+      var ro = new ResizeObserver(function() {
+         var visible = el.offsetHeight > 200;
+         Plotly.relayout(el, {'xaxis.visible': visible});
+      });
+      ro.observe(el);
+    }"
+  )
+
+
+vb_sparkline <- value_box(
+  title = img(src = here("docs","img", "circ_high_stable.png"), height = "38", width = "38"),
+  value = "7.6%",
+  p("Started at 12.6%"),
+  p("Averaged 8.6% over that period"),
+  showcase_layout = "bottom",
+  showcase = sparkline,
+ # theme = "primary",
+  full_screen = TRUE
+)
+
+vb2 <- value_box(
+  title = "Energy consumption",
+  value = "345 kwh/month",
+  showcase = bsicons::bs_icon("ev-station-fill")
+)
+
+vb3 <- value_box(
+  title = "Test Title",
+  value = "-56%",
+  showcase = bsicons::bs_icon("arrow-down-right")
+)
+```
+
+```{r}
+navset_card_tab(
+  height = 600,
+  full_screen = TRUE,
+  title = "Latest Wastewater Results",
+  nav_panel(
+    "COVID-19",
+    layout_column_wrap(
+      #width = 1/2,
+      style = css(grid_template_columns = "1fr 2fr"),
+    #  height = 300,
+      #list(h3("Citywide"),vb_sparkline),
+      card(fullscreen = TRUE, card_header("Citywide COVID-19 Levels & Trends"), vb_sparkline),
+      card(full_screen = TRUE, card_header("Neighborhood COVID-19 Levels & Trends"), card_body(class = "p-0", covid_map))
+    )
+  ),
+  # Info Box
+  nav_panel(
+    shiny::icon("circle-info"),
+    markdown("Learn more about [BPHC's wastwater program](https://www.boston.gov/government/cabinets/boston-public-health-commission/boston-wastewater-monitoring)")
+  ),
+  card_footer(
+    class = "fs-6",
+    "Data Through XX-XXX-2024"
+  )
+)
+```
+
+
+
+```{r eval=FALSE, include=FALSE}
+source_folder <- here()
+output_folder <- here("docs")
+rmarkdown::render(input = paste0(source_folder, "/", "summary.Rmd"),
+                  output_format = "html_document",
+                  output_file = "summary.html",
+                  output_dir = output_folder)
+```
