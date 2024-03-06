@@ -2,8 +2,15 @@
 output: 
   html_document:
     theme:
+      info: "#072671"
+      success: "#51ACFF"
       primary: "#072671"
-      bootswatch: "lumen"
+      secondary: "#45789C"
+      bootswatch: "default"
+      light: "#D2D2D2"
+      #navbar-bg: "#072671"
+      #card-cap-bg: "#E3E3E3"
+      #navbar-dark-active-color: "green"
 ---
 
 <style>
@@ -29,7 +36,10 @@ library(plotly)
 library(leaflet)
 ```
 
-```{r}
+
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
 plotly_widget <- plot_ly(x = diamonds$cut) %>%
   config(displayModeBar = FALSE) %>%
   layout(margin = list(t = 0, b = 0, l = 0, r = 0))
@@ -43,10 +53,26 @@ map_loc <- "/DataDrive/covid19/wastewater/wastewater-epi/_outputs/HTML/leaf_map.
 covid_map <- readRDS(map_loc)
 
 html_map_loc <- "/DataDrive/covid19/wastewater/wastewater-epi/_outputs/HTML/leaf_map.html"
-#file.copy(from = html_map_loc, to = here::here("docs", "leaf_map.html"), overwrite = TRUE)
+file.copy(from = html_map_loc, to = here::here("docs", "leaf_map.html"), overwrite = TRUE)
+
+
+html_map_loc <- "/DataDrive/covid19/wastewater/outputs/html/leaf_map.html"
+file.copy(from = html_map_loc, to = here::here("docs", "leaf_map.html"), overwrite = TRUE)
+
+file_loc <- "/DataDrive/covid19/wastewater/outputs/html"
+file_list <- list.files(file_loc)
+file_list <- file.path(file_loc, file_list)
+lapply()
+file.copy(from = html_map_loc, to = here::here("docs"), overwrite = TRUE)
 ```
 
 ```{r}
+circle_size <- "150"
+circle_size_top <- "100"
+circle_size_large <- "300"
+circle_size_med <- "200"
+showcase_pos <- "left center"
+
 sparkline <- plot_ly(economics) %>%
   add_lines(
     x = ~date, y = ~psavert,
@@ -75,23 +101,15 @@ sparkline <- plot_ly(economics) %>%
 
 
 vb_sparkline <- value_box(
-  title = img(src = here("docs","img", "circ_high_stable.png"), height = "38", width = "38"),
-  value = "7.6%",
-  p("Started at 12.6%"),
-  p("Averaged 8.6% over that period"),
-  showcase_layout = "bottom",
-  showcase = sparkline,
- # theme = "primary",
-  full_screen = TRUE
-)
-
-
-vb_sparkline2 <- value_box(
-  title = "Citywide Levels and Trends",
-  value = img(src = here("docs","img", "circ_high_stable.png"), height = "38", width = "38"),
-  h4("Level: High"),
+  title = " ",
+  value = img(src = here("docs","img", "circ_high_stable.png"), height = circle_size_top, width = circle_size_top),
+  br(),
+  em(markdown("<u>Level:</u>")),  
+  h2(strong("High")),
   p("XX copies/mL"),
-  h4("2-week Trend: Stable"),
+  br(),
+  em(markdown("<u>2-week Trend:</u>")),  
+  h2(strong("Stable")),
   p("+XX copies/mL (+2%) over the past 2 weeks"),
   showcase_layout = "bottom",
   showcase = sparkline,
@@ -99,48 +117,337 @@ vb_sparkline2 <- value_box(
   full_screen = TRUE
 )
 
-vb2 <- value_box(
-  title = "Energy consumption",
-  value = "345 kwh/month",
-  showcase = bsicons::bs_icon("ev-station-fill")
+
+vb_icon <- value_box(
+  title = em(markdown("<u>Level:</u>")),
+  value = h2(strong("High")),
+ # h1(strong("High")),
+  p("XX copies/mL"),
+  br(),
+  em(markdown("<u>2-Week Trend:</u>")),
+  h2(strong("Stable")),
+  p("+XX copies/mL (+2%) over the past 2 weeks", class = "text-muted"),
+  showcase = img(src = here("docs","img", "circ_high_stable.png"), height = circle_size, width = circle_size),
+  showcase_layout = "left center",
+ # theme = "primary",
+  full_screen = FALSE, 
+ max_height = "250px"
 )
 
-vb3 <- value_box(
-  title = "Test Title",
-  value = "-56%",
-  showcase = bsicons::bs_icon("arrow-down-right")
+circle_icon <- bsicons::bs_icon("circle-fill", class = "text-orange")
+arrow_icon <- bsicons::bs_icon("arrow-right")
+
+vb_level<- value_box(
+  title = em(markdown("<u>Level:</u>")),
+  value = h2(strong("High")),
+ # h1(strong("High")),
+  p("XX copies/mL"),
+  showcase = circle_icon, showcase_layout = showcase_pos,
+ # theme = "primary",
+  full_screen = FALSE, 
+ max_height = "250px"
+)
+
+vb_trend <- value_box(
+  title = em(markdown("<u>2-Week Trend:</u>")),
+  value = h2(strong("Stable")),
+  p("+XX copies/mL (+2%) over the past 2 weeks", class = "text-muted"),
+  showcase = arrow_icon, showcase_layout = showcase_pos,
+ # theme = "primary",
+  full_screen = FALSE, 
+ max_height = "250px"
+)
+
+
+```
+
+
+
+```{r}
+ht <- 600
+citywide_card_spark <- card(full_screen = TRUE, 
+                      card_header(h5(strong("Boston Citywide Levels & Trends"))), 
+                                  vb_sparkline)
+
+citywide_card_icon <- card(fullscreen = FALSE,  
+           card_header(h5(strong("Boston Citywide Levels & Trends"))), 
+           #card_title(strong("Title", class = "text-secondary")), 
+           vb_icon)
+
+nh_card <- card(full_screen = TRUE, card_header(h5(strong("Neighborhood Levels & Trends"))), card_body(class = "p-0", covid_map))
+
+nh_card_table <- navset_card_tab(title = h5(strong("Neighborhood Levels & Trends")),
+                                 height= ht,
+                                 nav_panel(bsicons::bs_icon("map"), covid_map), 
+                                 nav_panel(bsicons::bs_icon("table"), "Table"))
+
+covid_panels_spark <- layout_column_wrap(style = css(grid_template_columns = "1fr 2fr"), 
+                                   height = ht,
+                   citywide_card_spark, 
+                   nh_card_table)
+
+covid_panels_icon <- layout_column_wrap(style = css(grid_template_columns = "1fr 2fr"), 
+                                   height = ht,
+                   citywide_card_icon, 
+                   nh_card_table)
+
+info_card <- card(height = ht, markdown("Learn more about [BPHC's wastewater program](https://www.boston.gov/government/cabinets/boston-public-health-commission/boston-wastewater-monitoring)")
+  )
+```
+
+# {.tabset .tabset-pills}
+
+
+## PILLS {.tabset}
+
+### Sparkline
+
+```{r}
+navset_pill(
+  #title = "TITLE",
+  #height = 800,
+  #full_screen = TRUE,
+  nav_panel(
+    "COVID-19",
+    p(),
+    covid_panels_spark
+  ), 
+  nav_panel(
+    shiny::icon("circle-info"), br(),
+    info_card)
+  )
+
+```
+
+### Icon
+
+```{r}
+navset_pill(
+  #title = "TITLE",
+  #height = 800,
+  #full_screen = TRUE,
+  nav_panel(
+    "COVID-19",
+    p(),
+    layout_column_wrap(
+      #width = 1/2,
+      style = css(grid_template_columns = "1fr 2fr"),
+      height = ht,
+    #  list(h5("Citywide"), vb_icon),
+      #vb_sparkline2,
+      citywide_card_icon,
+      nh_card_table,
+    )
+  ), 
+  nav_panel(
+    shiny::icon("circle-info"), br(),
+    info_card)
+  )
+
+```
+
+## NAVBAR {.tabset}
+
+### Sparkline
+```{r}
+page_navbar(
+  #title = "My App",
+ # bg = "#0062cc",
+  underline = TRUE,
+  nav_panel(
+    "COVID-19",
+    h5(strong("COVID-19 Wastewater Levels and Trends"), class = "text-primary"),
+    covid_panels_spark
+  ),
+
+  # Info Box
+  nav_panel(
+    shiny::icon("circle-info"),
+    info_card),
+  nav_spacer(),
+  nav_menu(
+    title = "Links",
+    align = "right",
+    nav_item("link"),
+    nav_item("link")
+  )
 )
 ```
 
+### Icon
 ```{r}
-navset_card_tab(
-  height = 600,
-  full_screen = TRUE,
-  title = "Latest Wastewater Results",
+page_navbar(
+  #title = "My App",
+ # bg = "#0062cc",
+  underline = TRUE,
   nav_panel(
     "COVID-19",
+    h5(strong("COVID-19 Wastewater Levels and Trends"), class = "text-primary"),
+    covid_panels_icon
+  ),
+
+  # Info Box
+  nav_panel(
+    shiny::icon("circle-info"),
+    info_card),
+  nav_spacer(),
+  nav_menu(
+    title = "Links",
+    align = "right",
+    nav_item("link"),
+    nav_item("link")
+  )
+)
+```
+
+## CARD+PILLS {.tabset}
+
+### Sparkline 
+```{r}
+navset_card_pill(
+  height = 800,
+  full_screen = TRUE,
+  #card_header(class = "bg-dark"),
+#  title = "Latest Wastewater Results",
+  nav_panel(
+    "COVID-19",
+    h5(strong("COVID-19 Wastewater Levels and Trends"), class = "text-primary"),
+    covid_panels_spark),
+  # Info Box
+  nav_panel(
+    shiny::icon("circle-info"),
+    info_card),
+  footer = "Data Through XX-XXX-2024"
+)
+```
+
+### Icon 
+```{r}
+navset_card_pill(
+  height = 800,
+  full_screen = TRUE,
+  #card_header(class = "bg-dark"),
+#  title = "Latest Wastewater Results",
+  nav_panel(
+    "COVID-19",
+    h5(strong("COVID-19 Wastewater Levels and Trends"), class = "text-primary"),
+    covid_panels_icon),
+  # Info Box
+  nav_panel(
+    shiny::icon("circle-info"),
+    info_card),
+  footer = "Data Through XX-XXX-2024"
+)
+```
+
+## CARD+TABS {.tabset}
+
+### Sparkline
+
+```{r}
+navset_card_tab(
+  height = 800,
+  full_screen = TRUE,
+  #card_header(class = "bg-dark"),
+#  title = "Latest Wastewater Results",
+  nav_panel(
+    "COVID-19",
+    h5(strong("COVID-19 Wastewater Levels and Trends"), class = "text-primary"),
+    covid_panels_spark
+  ),
+  # Info Box
+  nav_panel(
+    shiny::icon("circle-info"),
+    info_card
+  ),
+  footer = "Data Through XX-XXX-2024"
+)
+```
+
+### Icon
+
+```{r}
+navset_card_tab(
+  height = 800,
+  full_screen = TRUE,
+  #card_header(class = "bg-dark"),
+#  title = "Latest Wastewater Results",
+  nav_panel(
+    "COVID-19",
+    h5(strong("COVID-19 Wastewater Levels and Trends"), class = "text-primary"),
+    covid_panels_icon
+  ),
+  # Info Box
+  nav_panel(
+    shiny::icon("circle-info"),
+    info_card
+  ),
+  footer = "Data Through XX-XXX-2024"
+)
+```
+
+
+
+
+
+
+
+## Misc
+
+### Option 4
+
+```{r}
+
+layout_column_wrap(
+  img(src = here("docs","img", "circ_high_stable.png"), height = circle_size, width = circle_size),
+        vb_level, vb_trend,
+                   style = css(grid_template_columns = "1fr 1.5fr 1.5fr")
+                   )
+
+citywide_card_bigicon <- card(
+  card_header(h5(strong("Boston Citywide Levels & Trends")), class = "bg-light"), 
+  div(img(src = here("docs","img", "circ_high_stable.png"), height = circle_size_large, width = circle_size_large), class = "text-center"), 
+  layout_column_wrap(vb_level, vb_trend), 
+  card_footer("Data Through XX-XXX-2024", class = "text-muted"))
+
+citywide_card_bigicon
+```
+
+### Option 5
+
+```{r}
+citywide_card_bigicon_rows <- card(
+  card_header(h5(strong("Boston Citywide Level & Trend")), class = "bg-light"), 
+  div(img(src = here("docs","img", "circ_high_stable.png"), height = circle_size, width = circle_size), class = "text-center"), 
+  vb_level, vb_trend, 
+  card_footer("Data Through XX-XXX-2024", class = "text-muted"))
+
+
+navset_card_pill(
+  height = 700,
+  full_screen = TRUE,
+  #card_header(class = "bg-dark"),
+#  title = "Latest Wastewater Results",
+  nav_panel(
+    "COVID-19",
+    h5(strong("COVID-19 Wastewater Levels and Trends"), class = "text-primary"),
     layout_column_wrap(
       #width = 1/2,
       style = css(grid_template_columns = "1fr 2fr"),
     #  height = 300,
-      #list(h3("Citywide"),vb_sparkline),
-      vb_sparkline2,
-      #card(fullscreen = TRUE,  vb_sparkline2),
-      card(full_screen = TRUE, card_header("Neighborhood COVID-19 Levels & Trends"), card_body(class = "p-0", covid_map))
+      #list(h5("Citywide"),vb_sparkline2),
+      #vb_sparkline2,
+      citywide_card_bigicon_rows, nh_card,
     )
   ),
   # Info Box
   nav_panel(
     shiny::icon("circle-info"),
-    markdown("Learn more about [BPHC's wastwater program](https://www.boston.gov/government/cabinets/boston-public-health-commission/boston-wastewater-monitoring)")
+    markdown("Learn more about [BPHC's wastewater program](https://www.boston.gov/government/cabinets/boston-public-health-commission/boston-wastewater-monitoring)")
   ),
-  card_footer(
-    class = "fs-6",
-    "Data Through XX-XXX-2024"
-  )
+  footer = card_footer("Data Through XX-XXX-2024")
 )
 ```
-
 
 
 ```{r eval=FALSE, include=FALSE}

@@ -3,7 +3,7 @@ output:
   html_document:
     theme:
       primary: "#072671"
-      bootswatch: "lumen"
+      bootswatch: "litera"
 ---
 
 ```{r setup, include=FALSE}
@@ -89,6 +89,28 @@ vb3 <- value_box(
 ```
 
 ```{r}
+# NH Card w/ Info
+navset_card_tab(
+  height = 600,
+  full_screen = TRUE,
+  title = "NH Levels & Trends",
+  nav_panel(bsicons::bs_icon("map"), covid_map),
+  nav_panel(bsicons::bs_icon("table"), "Table"),
+  nav_panel(
+    shiny::icon("circle-info"),
+    markdown("Learn more about [BPHC's wastwater program](https://www.boston.gov/government/cabinets/boston-public-health-commission/boston-wastewater-monitoring)")
+  ),
+  card_footer(
+    class = "fs-6",
+    "Data Through "
+  )
+)
+
+```
+
+# RSV & Flu Tabs
+
+```{r}
 navset_card_tab(
   height = 600,
   full_screen = TRUE,
@@ -125,6 +147,8 @@ navset_card_tab(
   )
 )
 ```
+
+
 
 ```{r}
 card(
@@ -185,6 +209,117 @@ navset_card_tab(
 )
 ```
 
+# Info Button Options
+```{r}
+card_add_info_tab <- function(main_header, main_content, info_content, full_screen = FALSE, height = NULL){
+  tab_out <- navset_card_pill(full_screen = full_screen, 
+                             height = height,
+                  nav_panel(main_header, main_content), 
+                  nav_panel(shiny::icon("circle-info"), info_content))
+  return(tab_out)
+}
+
+card_add_info_popover <- function(main_header, main_content, info_header = NULL, info_content, full_screen = FALSE, height = NULL, 
+                                  header_class = "bg-light"){
+  pop_info <- popover(shiny::icon("circle-info"), title = info_header, info_content)
+  tab_out <- card(full_screen = full_screen, 
+                             height = height,
+                  card_header(main_header, pop_info, class = paste("d-flex justify-content-between", header_class)),
+                  card_body(main_content))
+  return(tab_out)
+}
+
+
+card_add_info_tab(h5(strong("Boston Citywide Levels & Trends")), vb_sparkline2, p("Info Text"), height= 500)
+card_add_info_popover(h5(strong("Boston Citywide Levels & Trends")), main_content = vb_sparkline2, 
+                      info_header = "Info Header", info_content = p("Info Text"), height= 500)
+
+
+accordian_test <- accordion(
+  accordion_panel(icon = shiny::icon("circle-info"), 
+                  title = "Info",
+                  p("Accordian info", class = "text-secondary")
+                  ), 
+  open = FALSE
+  )
+
+accordian_test2 <- accordion(
+  accordion_panel(icon = shiny::icon("circle-info"), 
+                  title = "Info",
+                  p("Standalone accordian", class = "text-secondary")
+                  ), 
+  open = FALSE
+  )
+
+card(
+  card_header("Header", class = "bg-danger"),
+  vb_icon,
+  card_footer(accordian_test),
+  
+  )
+
+accordian_test2
+```
+
+
+
+```{r}
+
+
+card_image_pre <- card(
+  #height = 300,
+  
+  full_screen = FALSE,
+  card_header("HEADER", class = "bg-light"),
+  card_image(height = circle_size, width = circle_size,
+    file = here("docs","img", "circ_high_stable.png"),
+    class = "img-center"
+  ),
+  card_body(
+    fill = FALSE,
+    value_box("Title", value="High", p("text2")), 
+    value_box("Title", value="High", p("text2")), 
+    #card_title("Shiny for R"),
+    p(
+      class = "fw-success text-muted",
+      "Brought to you by RStudio."
+    )
+  )
+)
+
+card_image_pre2 <- card(
+  
+  layout_column_wrap(
+  style = css(grid_template_columns = "1fr 2fr"),
+  img(src = here("docs","img", "circ_high_stable.png"), height = "200", width = "200"),
+  list(value_box("Title", value="High", p("text2")), 
+  value_box("Title", value="High", p("text2")))
+)
+  
+)
+card_image_pre
+```
+
+```{r}
+link_shiny <- tags$a(shiny::icon("github"), "Shiny", href = "https://github.com/rstudio/shiny", target = "_blank")
+link_posit <- tags$a(shiny::icon("r-project"), "Posit", href = "https://posit.co", target = "_blank")
+
+page_navbar(
+  title = "My App",
+ # bg = "#0062cc",
+  underline = TRUE,
+  nav_panel(title = "One", p("First tab content.")),
+  nav_panel(title = "Two", p("Second tab content.")),
+  nav_panel(title = "Three", p("Third tab content")),
+  nav_spacer(),
+  nav_menu(
+    title = "Links",
+    align = "right",
+    nav_item(link_shiny),
+    nav_item(link_posit)
+  )
+)
+```
 
 ```{r eval=FALSE, include=FALSE}
 source_folder <- here()
