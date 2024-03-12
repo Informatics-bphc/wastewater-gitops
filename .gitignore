@@ -5,5 +5,7 @@
 
 index.Rmd
 _site.yml
+about.Rmd
+cards.Rmd
 
 _ignore
