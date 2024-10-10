@@ -40,7 +40,7 @@ output_html_path <- file.path(output_fileloc, "html")
 
 ```{r}
 # Ignore Files
-ignore_list <- c("summary_options.html", "leaf_map_flu.html","leaf_map_flu_files", "leaf_map_rsv.html","leaf_map_rsv_files") # Files to Exclude
+ignore_list <- c("summary_options.html","summary_flu_rsv.html", "leaf_map_flu.html","leaf_map_flu_files", "leaf_map_rsv.html","leaf_map_rsv_files") # Files to Exclude
 copy_to <- here("docs") # Directory for GitHub Page
 main_file <- "summary.html" # File to Make main github home page
 file_loc <- output_html_path # location to copy
