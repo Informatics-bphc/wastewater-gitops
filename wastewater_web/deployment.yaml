@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wastewater-web
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: wastewater-web
+  template:
+    metadata:
+      labels:
+        app: wastewater-web
+      spec:
+        containers:
+        - name: nginx
+          image: nginx:latest
+          ports:
+          - containerPort: 80

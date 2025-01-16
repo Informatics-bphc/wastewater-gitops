@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wastewater-epi
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wastewater-epi
+  template:
+    metadata:
+      labels:
+        app: wastewater-epi
+      spec:
+        containers:
+        - name: data-processor
+          image: python:3.10-slim
+          command: ["python3", "app.py"]
+          ports:
+          - containerPort: 5000
