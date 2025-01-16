@@ -12,9 +12,9 @@ spec:
     metadata:
       labels:
         app: wastewater-web
-      spec:
-        containers:
-        - name: nginx
-          image: nginx:latest
-          ports:
-          - containerPort: 80
+    spec:  # Ensure this field is correctly placed here
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80

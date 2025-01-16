@@ -4,7 +4,7 @@ metadata:
   name: wastewater-epi
   namespace: default
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: wastewater-epi
@@ -12,10 +12,9 @@ spec:
     metadata:
       labels:
         app: wastewater-epi
-      spec:
-        containers:
-        - name: data-processor
-          image: python:3.10-slim
-          command: ["python3", "app.py"]
-          ports:
-          - containerPort: 5000
+    spec:  # Ensure this field is correctly placed here
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
