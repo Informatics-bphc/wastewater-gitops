@@ -12,9 +12,17 @@ spec:
     metadata:
       labels:
         app: wastewater-web
-    spec:  # Ensure this field is correctly placed here
+    spec:
       containers:
       - name: nginx
         image: nginx:latest
         ports:
         - containerPort: 80
+        volumeMounts:
+        - mountPath: /usr/share/nginx/html/index.html  # Explicitly replace index.html
+          subPath: index.html  # Map only the index.html file from ConfigMap
+          name: app-content
+      volumes:
+      - name: app-content
+        configMap:
+          name: wastewater-web-content
