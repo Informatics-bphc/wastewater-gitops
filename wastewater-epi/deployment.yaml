@@ -12,9 +12,17 @@ spec:
     metadata:
       labels:
         app: wastewater-epi
-    spec:  # Ensure this field is correctly placed here
+    spec:
       containers:
       - name: nginx
         image: nginx:latest
         ports:
-        - containerPort: 80
+        - containerPort: 5000
+        volumeMounts:
+        - mountPath: /etc/nginx/conf.d/default.conf
+          subPath: nginx.conf
+          name: nginx-config
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: nginx-config
