@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: azure-file-test
+  namespace: default
+spec:
+  containers:
+  - name: azure-file-test
+    image: debian
+    command: ["/bin/bash", "-c", "--"]
+    args: ["while true; do sleep 30; done;"]
+    volumeMounts:
+    - mountPath: "/mnt/azure"
+      name: azure-file
+  volumes:
+  - name: azure-file
+    azureFile:
+      secretName: azure-storage-secret
+      shareName: wastewaterfiles
+      readOnly: false
