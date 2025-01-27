@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wastewater-epi
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: wastewater-epi
+  template:
+    metadata:
+      labels:
+        app: wastewater-epi
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 5000
+        volumeMounts:
+        - mountPath: /etc/nginx/conf.d/default.conf
+          subPath: nginx.conf
+          name: nginx-config
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: nginx-config
