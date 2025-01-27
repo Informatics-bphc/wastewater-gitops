@@ -1,15 +1,17 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: azure-file-test
+  name: privileged-pod
 spec:
   containers:
-  - name: azure-file-test
-    image: mcr.microsoft.com/azure-cli
+  - name: privileged-pod
+    image: ubuntu:latest
     command:
     - "/bin/bash"
     - "-c"
-    - "while true; do sleep 30; done;"
+    - "sleep infinity"
     securityContext:
       privileged: true
+    stdin: true
+    tty: true
   restartPolicy: Never
