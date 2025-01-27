@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: wastewater-ingress
+  namespace: default
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: 4.156.95.198.nip.io
+    http:
+      paths:
+      - path: /web
+        pathType: Prefix
+        backend:
+          service:
+            name: wastewater-web
+            port:
+              number: 80
+      - path: /epi
+        pathType: Prefix
+        backend:
+          service:
+            name: wastewater-epi
+            port:
+              number: 5000

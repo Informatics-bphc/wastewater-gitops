@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: azure-file-test
+spec:
+  containers:
+  - name: azure-file-test
+    image: mcr.microsoft.com/azure-cli
+    command:
+    - "/bin/bash"
+    - "-c"
+    - "while true; do sleep 30; done;"
+    securityContext:
+      privileged: true
+  restartPolicy: Never

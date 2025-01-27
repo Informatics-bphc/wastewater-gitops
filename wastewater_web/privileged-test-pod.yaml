@@ -1,0 +1,12 @@
+﻿apiVersion: v1
+kind: Pod
+metadata:
+  name: privileged-test-pod
+spec:
+  containers:
+  - name: privileged-test-pod
+    image: debian
+    securityContext:
+      privileged: true
+    stdin: true
+    tty: true

@@ -1,0 +1,72 @@
+---
+output: 
+  html_document:
+    theme:
+      info: "#072671"
+      success: "#51ACFF"
+      primary: "#072671"
+      secondary: "#45789C"
+      bootswatch: "default"
+      light: "#D2D2D2"
+      #navbar-bg: "#072671"
+      #card-cap-bg: "#E3E3E3"
+      #navbar-dark-active-color: "green"
+---
+
+<style>
+.main-container {
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: auto;
+}
+</style>
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = FALSE,
+	message = FALSE,
+	warning = FALSE
+)
+library("here")
+library("tidyverse")
+library("fs")
+
+output_fileloc <- "/DataDrive/covid19/wastewater/outputs"
+output_html_path <- file.path(output_fileloc, "html")
+
+`%ni%` <- Negate(`%in%`)
+```
+
+```{r}
+# Ignore Files
+ignore_list <- c("summary_options.html","summary_flu_rsv.html", "leaf_map_flu.html","leaf_map_flu_files", "leaf_map_rsv.html","leaf_map_rsv_files") # Files to Exclude
+copy_to <- here("docs") # Directory for GitHub Page
+main_file <- "summary.html" # File to Make main github home page
+file_loc <- output_html_path # location to copy
+
+# List out Files
+full_list_names <- list.files(file_loc)
+full_list_names <- full_list_names[full_list_names %ni% ignore_list] # Remove Ignored Files
+full_list <- file.path(file_loc, full_list_names)
+
+# Separating Directories from files
+dir_list <- full_list[dir.exists(full_list)]
+copy_to_dir <- file.path(copy_to, full_list_names[dir.exists(full_list)])
+file_list <- full_list[!dir.exists(full_list)]
+
+# Copy Files & Directory
+lapply(file_list, function(x)file_copy(x, copy_to, overwrite = TRUE))
+#lapply(dir_list, function(x)dir_copy(x, copy_to, overwrite = TRUE))
+for(i in 1:length(dir_list)){
+  dir_copy(dir_list[i], copy_to_dir[i], overwrite = TRUE)
+}
+
+# Set Main Page
+main_file_in <- full_list[full_list_names == main_file]
+main_file_out <- file.path(copy_to, "index.html")
+file_copy(main_file_in, main_file_out, overwrite = TRUE)
+```
+
+
+
