@@ -11,6 +11,7 @@ env:
   IMAGE_NAME: wastewater-web
   RESOURCE_GROUP: DMI-Dev
   CLUSTER_NAME: bphc-modernization-cluster
+  NAMESPACE: default
 
 jobs:
   build-and-push:
@@ -23,7 +24,9 @@ jobs:
       - name: Log in to Azure
         uses: azure/login@v1
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Log in to Azure Container Registry
         uses: azure/docker-login@v1
@@ -51,7 +54,9 @@ jobs:
       - name: Log in to Azure
         uses: azure/login@v1
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Get AKS Credentials
         run: |
@@ -61,4 +66,24 @@ jobs:
         run: |
           kubectl apply -f wastewater_web/deployment.yaml
           kubectl apply -f wastewater_web/service.yaml
-          kubectl rollout status deployment/wastewater-web -n default
+          kubectl rollout status deployment/wastewater-web -n ${{ env.NAMESPACE }}
+
+  sync-argocd:
+    name: Sync ArgoCD Applications
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install ArgoCD CLI
+        run: |
+          curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+          chmod +x argocd-linux-amd64
+          sudo mv argocd-linux-amd64 /usr/local/bin/argocd
+
+      - name: Log in to ArgoCD
+        run: |
+          argocd login ${{ secrets.ARGOCD_SERVER }} --username admin --password ${{ secrets.ARGOCD_PASSWORD }} --insecure
+
+      - name: Sync Applications
+        run: |
+          argocd app sync wastewater-web
+          argocd app sync wastewater-epi
