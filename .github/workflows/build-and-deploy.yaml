@@ -6,6 +6,10 @@ on:
       - main
   workflow_dispatch:  # Allows manual triggering from GitHub UI or CLI
 
+permissions:
+  id-token: write
+  contents: read
+
 env:
   ACR_NAME: bphcdmiacr
   IMAGE_NAME: wastewater-web
@@ -68,7 +72,22 @@ jobs:
           kubectl apply -f wastewater_web/service.yaml
           kubectl rollout status deployment/wastewater-web -n ${{ env.NAMESPACE }}
 
-      - name: Sync ArgoCD Applications
+  argocd-sync:
+    name: Sync Applications with ArgoCD
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install ArgoCD CLI
+        run: |
+          curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+          chmod +x argocd-linux-amd64
+          sudo mv argocd-linux-amd64 /usr/local/bin/argocd
+
+      - name: Log in to ArgoCD
+        run: |
+          argocd login ${{ secrets.ARGOCD_SERVER }} --username ${{ secrets.ARGOCD_USERNAME }} --password ${{ secrets.ARGOCD_PASSWORD }} --insecure
+
+      - name: Sync Wastewater Applications
         run: |
           argocd app sync wastewater-web
           argocd app sync wastewater-epi
