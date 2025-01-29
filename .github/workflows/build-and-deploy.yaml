@@ -6,10 +6,6 @@ on:
       - main
   workflow_dispatch:  # Allows manual triggering from GitHub UI or CLI
 
-permissions:
-  id-token: write
-  contents: read
-
 env:
   ACR_NAME: bphcdmiacr
   IMAGE_NAME: wastewater-web
@@ -25,19 +21,14 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Log in to Azure
-        uses: azure/login@v1
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Log in to Azure using CLI
+        run: |
+          az login --identity || az login --use-device-code
+          az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Log in to Azure Container Registry
-        uses: azure/docker-login@v1
-        with:
-          login-server: ${{ env.ACR_NAME }}.azurecr.io
-          username: ${{ secrets.ACR_USERNAME }}
-          password: ${{ secrets.ACR_PASSWORD }}
+        run: |
+          az acr login --name ${{ env.ACR_NAME }}
 
       - name: Build and Push Docker Image
         run: |
@@ -52,15 +43,13 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Log in to Azure using CLI
+        run: |
+          az login --identity || az login --use-device-code
+          az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
       - name: Set up Kubectl
         uses: azure/setup-kubectl@v3
-
-      - name: Log in to Azure
-        uses: azure/login@v1
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Get AKS Credentials
         run: |
@@ -72,22 +61,7 @@ jobs:
           kubectl apply -f wastewater_web/service.yaml
           kubectl rollout status deployment/wastewater-web -n ${{ env.NAMESPACE }}
 
-  argocd-sync:
-    name: Sync Applications with ArgoCD
-    needs: deploy
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install ArgoCD CLI
-        run: |
-          curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
-          chmod +x argocd-linux-amd64
-          sudo mv argocd-linux-amd64 /usr/local/bin/argocd
-
-      - name: Log in to ArgoCD
-        run: |
-          argocd login ${{ secrets.ARGOCD_SERVER }} --username ${{ secrets.ARGOCD_USERNAME }} --password ${{ secrets.ARGOCD_PASSWORD }} --insecure
-
-      - name: Sync Wastewater Applications
+      - name: Sync ArgoCD Applications
         run: |
           argocd app sync wastewater-web
           argocd app sync wastewater-epi
