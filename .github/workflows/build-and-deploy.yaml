@@ -6,10 +6,6 @@ on:
       - main
   workflow_dispatch:  # Allows manual triggering from GitHub UI or CLI
 
-permissions:
-  id-token: write  # Enables OpenID Connect authentication with Azure
-  contents: read   # Grants read access to the repository
-
 env:
   ACR_NAME: bphcdmiacr
   IMAGE_NAME: wastewater-web
@@ -21,6 +17,9 @@ jobs:
   build-and-push:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -41,13 +40,16 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          docker build -t ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest ./wastewater_web
+          docker build -t ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest -f wastewater_web/Dockerfile wastewater_web
           docker push ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest
 
   deploy:
     name: Deploy to Kubernetes
     needs: build-and-push
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -66,13 +68,9 @@ jobs:
         run: |
           az aks get-credentials --resource-group ${{ env.RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }}
 
-      - name: Deploy Application to AKS
+      - name: Deploy Application
         run: |
           kubectl apply -f wastewater_web/deployment.yaml
           kubectl apply -f wastewater_web/service.yaml
           kubectl rollout status deployment/wastewater-web -n ${{ env.NAMESPACE }}
 
-      - name: Sync with ArgoCD
-        run: |
-          argocd app sync wastewater-web
-          argocd app sync wastewater-epi
