@@ -6,16 +6,10 @@ on:
       - main
   workflow_dispatch:
 
-permissions:
-  id-token: write
-  contents: read
-
 jobs:
   build-and-push:
-    name: Build and Push Docker Image
     runs-on: ubuntu-latest
     steps:
-
       - name: Checkout Repository
         uses: actions/checkout@v4
 
@@ -30,26 +24,23 @@ jobs:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          enable-AzPSSession: false
 
       - name: Log in to Azure Container Registry
         uses: azure/docker-login@v1
         with:
-          login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+          login-server: ${{ secrets.ACR_USERNAME }}.azurecr.io
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
       - name: Build and Push Docker Image
         run: |
-          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/wastewater-web:latest -f wastewater_web/Dockerfile wastewater_web
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/wastewater-web:latest
+          docker build -t ${{ secrets.ACR_USERNAME }}.azurecr.io/wastewater-web:latest -f wastewater_web/Dockerfile wastewater_web
+          docker push ${{ secrets.ACR_USERNAME }}.azurecr.io/wastewater-web:latest
 
   deploy:
-    name: Deploy to Kubernetes
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
-
       - name: Checkout Repository
         uses: actions/checkout@v4
 
@@ -59,7 +50,6 @@ jobs:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          enable-AzPSSession: false
 
       - name: Install Kubectl and Kubelogin
         run: |
@@ -70,15 +60,14 @@ jobs:
           rm -rf kubelogin-linux-amd64.zip bin
 
       - name: Verify AKS Permissions
-        run: az aks show --resource-group DMI-Dev --name bphc-modernization-cluster
+        run: |
+          az aks show --resource-group DMI-Dev --name bphc-modernization-cluster
 
-      - name: Get AKS Credentials with AAD Authentication
+      - name: Get AKS Credentials with Azure AD Authentication
         run: |
           az aks get-credentials --resource-group DMI-Dev --name bphc-modernization-cluster --overwrite-existing
           kubelogin convert-kubeconfig -l azurecli
 
-      - name: Deploy Application
+      - name: Restart Deployment
         run: |
-          kubectl apply -f wastewater_web/deployment.yaml
-          kubectl apply -f wastewater_web/service.yaml
-          kubectl rollout status deployment/wastewater-web -n default
+          kubectl rollout restart deployment wastewater-web -n default
