@@ -1,14 +1,14 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: wastewater-web  # Hyphen for ArgoCD compatibility
+  name: wastewater-web
   namespace: argocd
 spec:
   project: default
   source:
     repoURL: https://github.com/Informatics-bphc/wastewater-gitops.git
     targetRevision: main
-    path: wastewater_web/k8s  # Underscore to match GitHub repo structure
+    path: wastewater_web/k8s  # Make sure this matches your repo!
   destination:
     server: https://kubernetes.default.svc
     namespace: wastewater
