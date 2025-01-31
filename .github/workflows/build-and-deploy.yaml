@@ -76,19 +76,12 @@ jobs:
 
       - name: Get AKS Credentials
         run: |
-          az aks get-credentials --resource-group DMI-Dev --name bphc-modernization-cluster
-
-      - name: Ensure Latest Docker Image is Used
-        run: |
-          kubectl delete pod -n default --all || true
+          az aks get-credentials --resource-group DMI-Dev --name bphc-modernization-cluster --admin
 
       - name: Deploy Application to AKS
         run: |
           kubelogin convert-kubeconfig -l azurecli
+          kubectl delete pod -n default --all || true
           kubectl apply -f wastewater_web/deployment.yaml
           kubectl apply -f wastewater_web/service.yaml
           kubectl rollout status deployment/wastewater-web -n default
-
-      - name: Check Pod Status
-        run: |
-          kubectl get pods -n default
