@@ -55,7 +55,10 @@ jobs:
       - name: Install Kubectl and Kubelogin
         run: |
           az aks install-cli
-          sudo az aks install-kubelogin
+          curl -LO https://github.com/Azure/kubelogin/releases/latest/download/kubelogin-linux-amd64.zip
+          unzip kubelogin-linux-amd64.zip
+          sudo mv bin/linux_amd64/kubelogin /usr/local/bin
+          rm -rf kubelogin-linux-amd64.zip bin
 
       - name: Get AKS Credentials
         run: |
