@@ -4,7 +4,11 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:  # Allows manual triggering
+  workflow_dispatch:  # Allows manual triggering from GitHub UI or CLI
+
+permissions:
+  id-token: write  # Enables OpenID Connect authentication with Azure
+  contents: read   # Grants read access to the repository
 
 env:
   ACR_NAME: bphcdmiacr
@@ -21,7 +25,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Log in to Azure
+      - name: Log in to Azure using OIDC
         uses: azure/login@v1
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -29,8 +33,11 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Log in to Azure Container Registry
-        run: |
-          az acr login --name ${{ env.ACR_NAME }}
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ env.ACR_NAME }}.azurecr.io
+          username: ${{ secrets.AZURE_CLIENT_ID }}
+          password: ${{ secrets.AZURE_CLIENT_SECRET }}
 
       - name: Build and Push Docker Image
         run: |
@@ -48,7 +55,7 @@ jobs:
       - name: Set up Kubectl
         uses: azure/setup-kubectl@v3
 
-      - name: Log in to Azure
+      - name: Log in to Azure using OIDC
         uses: azure/login@v1
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -59,7 +66,7 @@ jobs:
         run: |
           az aks get-credentials --resource-group ${{ env.RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }}
 
-      - name: Deploy Application
+      - name: Deploy Application to AKS
         run: |
           kubectl apply -f wastewater_web/deployment.yaml
           kubectl apply -f wastewater_web/service.yaml
@@ -67,6 +74,5 @@ jobs:
 
       - name: Sync with ArgoCD
         run: |
-          argocd login $ARGOCD_SERVER --username admin --password $ARGOCD_PASSWORD --insecure
           argocd app sync wastewater-web
           argocd app sync wastewater-epi
