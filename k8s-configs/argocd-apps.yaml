@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://github.com/Informatics-bphc/wastewater-gitops.git
     targetRevision: main
-    path: wastewater-epi/k8s  # Updated path
+    path: wastewater-epi/k8s  # Keep as is
   destination:
     server: https://kubernetes.default.svc
     namespace: wastewater
@@ -22,14 +22,14 @@ spec:
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: wastewater-web
+  name: wastewater_web  # Fix name to use underscore to match GitHub
   namespace: argocd
 spec:
   project: default
   source:
     repoURL: https://github.com/Informatics-bphc/wastewater-gitops.git
     targetRevision: main
-    path: wastewater_web/k8s  # Updated path
+    path: wastewater_web/k8s  # Match correct directory
   destination:
     server: https://kubernetes.default.svc
     namespace: wastewater
