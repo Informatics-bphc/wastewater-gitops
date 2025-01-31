@@ -4,22 +4,11 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:  # Allows manual triggering from GitHub UI or CLI
-
-env:
-  ACR_NAME: bphcdmiacr
-  IMAGE_NAME: wastewater-web
-  RESOURCE_GROUP: DMI-Dev
-  CLUSTER_NAME: bphc-modernization-cluster
-  NAMESPACE: default
+  workflow_dispatch:
 
 jobs:
   build-and-push:
-    name: Build and Push Docker Image
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -30,32 +19,26 @@ jobs:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          enable-AzPSSession: false
 
       - name: Log in to Azure Container Registry
         uses: azure/docker-login@v1
         with:
-          login-server: ${{ env.ACR_NAME }}.azurecr.io
-          username: ${{ secrets.AZURE_CLIENT_ID }}
-          password: ${{ secrets.AZURE_CLIENT_SECRET }}
+          login-server: bphcdmiacr.azurecr.io
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
 
       - name: Build and Push Docker Image
         run: |
-          docker build -t ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest -f wastewater_web/Dockerfile wastewater_web
-          docker push ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest
+          docker build -t bphcdmiacr.azurecr.io/wastewater-web:latest -f wastewater_web/Dockerfile wastewater_web
+          docker push bphcdmiacr.azurecr.io/wastewater-web:latest
 
   deploy:
-    name: Deploy to Kubernetes
-    needs: build-and-push
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
+    needs: build-and-push
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-
-      - name: Set up Kubectl
-        uses: azure/setup-kubectl@v3
 
       - name: Log in to Azure using OIDC
         uses: azure/login@v1
@@ -63,14 +46,20 @@ jobs:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          enable-AzPSSession: false
+
+      - name: Install Kubectl and Kubelogin
+        run: |
+          az aks install-cli
+          sudo az aks install-kubelogin
 
       - name: Get AKS Credentials
         run: |
-          az aks get-credentials --resource-group ${{ env.RESOURCE_GROUP }} --name ${{ env.CLUSTER_NAME }}
+          az aks get-credentials --resource-group DMI-Dev --name bphc-modernization-cluster
 
-      - name: Deploy Application
+      - name: Deploy Application to AKS
         run: |
+          kubelogin convert-kubeconfig -l azurecli
           kubectl apply -f wastewater_web/deployment.yaml
           kubectl apply -f wastewater_web/service.yaml
-          kubectl rollout status deployment/wastewater-web -n ${{ env.NAMESPACE }}
-
+          kubectl rollout status deployment/wastewater-web -n default
