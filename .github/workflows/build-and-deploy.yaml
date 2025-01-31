@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:  # Allows manual triggering from GitHub UI or CLI
+  workflow_dispatch:  # Allows manual triggering
 
 env:
   ACR_NAME: bphcdmiacr
@@ -21,10 +21,12 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Log in to Azure using CLI
-        run: |
-          az login --identity || az login --use-device-code
-          az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Log in to Azure Container Registry
         run: |
@@ -43,13 +45,15 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Log in to Azure using CLI
-        run: |
-          az login --identity || az login --use-device-code
-          az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
       - name: Set up Kubectl
         uses: azure/setup-kubectl@v3
+
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Get AKS Credentials
         run: |
@@ -61,7 +65,8 @@ jobs:
           kubectl apply -f wastewater_web/service.yaml
           kubectl rollout status deployment/wastewater-web -n ${{ env.NAMESPACE }}
 
-      - name: Sync ArgoCD Applications
+      - name: Sync with ArgoCD
         run: |
+          argocd login $ARGOCD_SERVER --username admin --password $ARGOCD_PASSWORD --insecure
           argocd app sync wastewater-web
           argocd app sync wastewater-epi
