@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://github.com/Informatics-bphc/wastewater-gitops.git
     targetRevision: main
-    path: wastewater-epi/k8s
+    path: wastewater-epi/k8s  # Updated path
   destination:
     server: https://kubernetes.default.svc
     namespace: wastewater
@@ -29,7 +29,7 @@ spec:
   source:
     repoURL: https://github.com/Informatics-bphc/wastewater-gitops.git
     targetRevision: main
-    path: wastewater_web/k8s
+    path: wastewater_web/k8s  # Updated path
   destination:
     server: https://kubernetes.default.svc
     namespace: wastewater
